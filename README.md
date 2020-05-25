@@ -12,15 +12,26 @@ All versions are saved in `/usr/local/bin/kubectl-{version}`
 
 ### Missing kubectl version:
 ```bash
-kubectlx 1.11.6
+$ kubectlx 1.11.6
 2020/05/25 19:39:49 stat /usr/local/bin/kubectl-1.11.6: no such file or directory
 2020/05/25 19:39:49 Do you want to download this version? [y/n]:
 y
 2020/05/25 19:39:52 Downloading kubectl version 1.11.6
+$ kubectl version --client=true --short
+Client Version: v1.11.6
+```
+
+### Existing kubectl version:
+```bash
+$ kubectlx 1.18.0
+$ kubectl version --client=true --short
+Client Version: v1.18.0
 ```
 
 ### Same version as the current one:
 ```bash
-kubectlx 1.11.6
+$ kubectlx 1.11.6
 2020/05/25 19:40:45 You are already using version 1.11.6
+$ kubectl version --client=true --short
+Client Version: v1.11.6
 ```
