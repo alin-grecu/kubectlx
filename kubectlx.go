@@ -15,7 +15,6 @@ import (
 
 var KUBECTL_DEFAULT_PATH string = "/usr/local/bin/kubectl"
 var KUBECTL_DOWNLOAD_URL_BASE string = "https://storage.googleapis.com/kubernetes-release/release/v"
-var KUBECTL_DEFAULT_VERSION string = "0.0.0"
 
 type Kubectl struct {
 	Path    string
@@ -23,7 +22,6 @@ type Kubectl struct {
 }
 
 func (k *Kubectl) Exists() bool {
-	log.Println("Entering Exists()")
 	_, err := os.Stat(k.Path)
 
 	if err != nil {
@@ -33,7 +31,6 @@ func (k *Kubectl) Exists() bool {
 }
 
 func (k *Kubectl) Switch(destination string) (bool, error) {
-	log.Println("Entering Switch()")
 	from, err := os.Open(k.Path)
 
 	if err != nil {
@@ -56,7 +53,6 @@ func (k *Kubectl) Switch(destination string) (bool, error) {
 }
 
 func (k *Kubectl) GetVersion() string {
-	log.Println("Entering GetVersion()")
 	// Execute kubectl to get version info
 	cmd := exec.Command(k.Path, "version", "--client=true", "--short")
 	out, _ := cmd.CombinedOutput()
@@ -75,7 +71,6 @@ func (k *Kubectl) GetVersion() string {
 }
 
 func (k *Kubectl) AskConfirmation(question string) (bool, error) {
-	log.Println("Entering AskConfirmation()")
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -97,7 +92,6 @@ func (k *Kubectl) AskConfirmation(question string) (bool, error) {
 }
 
 func (k *Kubectl) Download() (bool, error) {
-	log.Println("Entering Download()")
 	url := KUBECTL_DOWNLOAD_URL_BASE + k.Version + "/bin/" + runtime.GOOS + "/" + runtime.GOARCH + "/" + "kubectl"
 
 	// Get the data
@@ -130,7 +124,6 @@ func (k *Kubectl) Download() (bool, error) {
 }
 
 func Parse(argv []string) (string, error) {
-	log.Println("Entering Parse()")
 	if len(argv) == 0 {
 		return "", errors.New("Too few arguments")
 	} else if len(argv) > 1 {
@@ -140,7 +133,6 @@ func Parse(argv []string) (string, error) {
 }
 
 func Check(isTrue bool, err error) bool {
-	log.Println("Entering Check()")
 	if err != nil {
 		log.Fatal(err)
 		return false
@@ -172,32 +164,30 @@ func main() {
 
 	// Check if kubectl default exists
 	if current.Exists() {
-		log.Println("Default exists. Saving default.")
 		if Check(current.Switch(current.Path + "-" + current.Version)) {
-			log.Println("Saved default.")
+			log.Printf("Saved current version under %s", current.Path+"-"+current.Version)
 		}
 	}
 	if desired.Exists() {
 		if current.Version != desired.Version {
 			desired.Switch(KUBECTL_DEFAULT_PATH)
-			log.Println("Saved version as default.")
-		} else {
-			log.Println("Identical versions")
+			log.Printf("You are using kubectl %s", desired.Version)
 		}
 	} else {
-		if Check(desired.AskConfirmation("Do you want to download this version?")) {
+		if Check(desired.AskConfirmation("You do not have this version. Do you want to download it?")) {
 			if Check(desired.Download()) {
 				if desired.Version != desired.GetVersion() {
 					err := os.Remove(desired.Path)
-					log.Fatalln("Invalid version")
+					log.Fatalf("Version %s is invalid. I have removed %s", desired.Version, desired.Path)
 					if err != nil {
 						log.Fatal(err)
 					}
-				} else {
-					desired.Switch(KUBECTL_DEFAULT_PATH)
-					log.Println("Saved version as default.")
 				}
 			}
+		} else {
+			os.Exit(0)
 		}
 	}
+	desired.Switch(KUBECTL_DEFAULT_PATH)
+	log.Printf("You are using kubectl %s", desired.Version)
 }
