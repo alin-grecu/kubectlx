@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var KUBECTL_DEFAULT_PATH string = "/usr/local/bin/kubectl"
@@ -21,6 +23,7 @@ type Kubectl struct {
 	Version string
 }
 
+// Checks if k.Path exists
 func (k *Kubectl) Exists() bool {
 	_, err := os.Stat(k.Path)
 
@@ -30,6 +33,7 @@ func (k *Kubectl) Exists() bool {
 	return true
 }
 
+// Moves file from source to destination, essentialy a copy-paste function
 func (k *Kubectl) Switch(destination string) (bool, error) {
 	from, err := os.Open(k.Path)
 
@@ -52,6 +56,7 @@ func (k *Kubectl) Switch(destination string) (bool, error) {
 	return true, nil
 }
 
+// Returns version number {major}-{minor}-{patch} as string
 func (k *Kubectl) GetVersion() string {
 	// Execute kubectl to get version info
 	cmd := exec.Command(k.Path, "version", "--client=true", "--short")
@@ -70,12 +75,13 @@ func (k *Kubectl) GetVersion() string {
 	return result[2]
 }
 
+// Just a simple prompt for user confirmation before Download takes place
 func (k *Kubectl) AskConfirmation(question string) (bool, error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		log.Printf("%s [y/n]:", question)
-
+		// This is a clean workaround to using log.Printf which adds a new line
+		fmt.Printf("%s %s [y/n]: ", time.Now().Format("2006/01/02 15:04:05"), question)
 		response, err := reader.ReadString('\n')
 		if err != nil {
 			return false, err
@@ -91,6 +97,7 @@ func (k *Kubectl) AskConfirmation(question string) (bool, error) {
 	}
 }
 
+// Handles kubectl file download and permissions
 func (k *Kubectl) Download() (bool, error) {
 	url := KUBECTL_DOWNLOAD_URL_BASE + k.Version + "/bin/" + runtime.GOOS + "/" + runtime.GOARCH + "/" + "kubectl"
 
@@ -132,6 +139,8 @@ func Parse(argv []string) (string, error) {
 	return argv[0], nil
 }
 
+// This is a handler for some functions returning both bool and err
+// it makes main() a bit more readable
 func Check(isTrue bool, err error) bool {
 	if err != nil {
 		log.Fatal(err)
