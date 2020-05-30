@@ -97,17 +97,19 @@ func (k *Kubectl) Download() error {
 	// Set permissions
 	err = os.Chmod(k.Path, 0755)
 
+	return err
+}
+
+func (k *Kubectl) ValidateDownload() {
 	// Check version
 	downloaded_version := k.GetVersion()
 	if k.Version != downloaded_version {
-		err = os.Remove(k.Path)
+		err := os.Remove(k.Path)
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Fatalf("%s is invalid or the downloaded version doesn't exist", k.Path)
 	}
-
-	return err
 }
 
 func parseArgs(argv []string) string {
@@ -180,6 +182,8 @@ func main() {
 			err := desired.Download()
 			if err != nil {
 				log.Println(err)
+			} else {
+				desired.ValidateDownload()
 			}
 		} else {
 			os.Exit(1)
