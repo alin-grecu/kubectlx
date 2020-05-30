@@ -177,12 +177,7 @@ func main() {
 			log.Printf("Saved current version under %s", current.Path+"-"+current.Version)
 		}
 	}
-	if desired.Exists() {
-		if current.Version != desired.Version {
-			desired.Switch(KUBECTL_DEFAULT_PATH)
-			log.Printf("You are using kubectl %s", desired.Version)
-		}
-	} else {
+	if !desired.Exists() {
 		if Check(desired.AskConfirmation("You do not have this version. Do you want to download it?")) {
 			if Check(desired.Download()) {
 				if desired.Version != desired.GetVersion() {
