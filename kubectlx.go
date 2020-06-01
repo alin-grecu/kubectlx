@@ -203,9 +203,7 @@ func main() {
 
 	// Check if kubectl default exists
 	if current.Exists() {
-		if Check(current.Switch(current.Path + "-" + current.Version)) {
-			log.Printf("Saved current version under %s", current.Path+"-"+current.Version)
-		}
+		Check(current.Switch(current.Path + "-" + current.Version))
 	}
 	if !desired.Exists() {
 		if Check(desired.AskConfirmation("You do not have this version. Do you want to download it?")) {
@@ -223,5 +221,4 @@ func main() {
 		}
 	}
 	desired.Switch(KUBECTL_DEFAULT_PATH)
-	log.Printf("You are using kubectl %s", desired.Version)
 }
