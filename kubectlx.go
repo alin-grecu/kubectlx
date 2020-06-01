@@ -144,13 +144,8 @@ func Parse(argv []string) (string, error) {
 func Check(isTrue bool, err error) bool {
 	if err != nil {
 		log.Fatal(err)
-		return false
 	}
-	if isTrue {
-		return true
-	} else {
-		return false
-	}
+	return isTrue
 }
 
 func main() {
