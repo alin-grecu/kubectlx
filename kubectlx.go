@@ -181,7 +181,7 @@ func PrintHelp() {
 	helpMsg := `Usage:
 	%[1]v --help:      Print help menu
 	%[1]v list:        Print list of installed versions
-	%[1]v <version>:   Where version is the desired version, e.g: 1.12.0`
+	%[1]v {version}:   Where version is the desired version, e.g: 1.12.0`
 	fmt.Printf(helpMsg, os.Args[0])
 	os.Exit(1)
 }
