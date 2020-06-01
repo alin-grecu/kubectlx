@@ -156,11 +156,12 @@ func ListVersions() {
 	for _, v := range versions {
 		fmt.Println(v)
 	}
+	os.Exit(0)
 }
 
 func Parse(argv []string) (string, error) {
 	if len(argv) == 0 {
-		return "", errors.New("Too few arguments")
+		PrintHelp()
 	} else if len(argv) > 1 {
 		return "", errors.New("Too many arguments")
 	}
@@ -176,19 +177,31 @@ func Check(isTrue bool, err error) bool {
 	return isTrue
 }
 
-func main() {
-	// Parse arguments
-	option, err := Parse(os.Args[1:])
+func PrintHelp() {
+	helpMsg := `Usage:
+	%[1]v --help:      Print help menu
+	%[1]v list:        Print list of installed versions
+	%[1]v <version>:   Where version is the desired version, e.g: 1.12.0`
+	fmt.Printf(helpMsg, os.Args[0])
+	os.Exit(1)
+}
+
+func Handler(arg string, err error) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if option == "list" {
+	switch arg {
+	case "list":
 		ListVersions()
-		os.Exit(0)
+	case "--help":
+		PrintHelp()
 	}
+	return arg
+}
 
-	version := option
+func main() {
+	// Parse arguments
+	version := Handler(Parse(os.Args[1:]))
 
 	// Initialize
 	var current, desired Kubectl
