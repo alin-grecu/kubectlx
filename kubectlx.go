@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 	"time"
 )
 
+var BIN_BASE = "/usr/local/bin"
 var KUBECTL_DEFAULT_PATH string = "/usr/local/bin/kubectl"
 var KUBECTL_DOWNLOAD_URL_BASE string = "https://storage.googleapis.com/kubernetes-release/release/v"
 
@@ -130,6 +132,32 @@ func (k *Kubectl) Download() (bool, error) {
 	return true, nil
 }
 
+func FindFiles(filesPath string) []string {
+	matches, err := filepath.Glob(filesPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if len(matches) == 0 {
+		return nil
+	}
+	return matches
+}
+
+func ListVersions() {
+	var versions []string
+	versionPaths := FindFiles(KUBECTL_DEFAULT_PATH + "-*")
+	if versionPaths == nil {
+		log.Fatalln("No versions installed with kubectlx")
+	}
+	for _, v := range versionPaths {
+		versions = append(versions, strings.Trim(v, "/usr/local/bin/kubectl-"))
+	}
+	for _, v := range versions {
+		fmt.Println(v)
+	}
+}
+
 func Parse(argv []string) (string, error) {
 	if len(argv) == 0 {
 		return "", errors.New("Too few arguments")
@@ -150,10 +178,17 @@ func Check(isTrue bool, err error) bool {
 
 func main() {
 	// Parse arguments
-	version, err := Parse(os.Args[1:])
+	option, err := Parse(os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if option == "list" {
+		ListVersions()
+		os.Exit(0)
+	}
+
+	version := option
 
 	// Initialize
 	var current, desired Kubectl
